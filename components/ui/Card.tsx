@@ -13,15 +13,15 @@ export default function Card({ data }: { data: any }) {
       <Image
         src={data.imageUrl}
         alt={data.title || "Card Image"}
-        width={data.imageWidth}
-        height={data.imageHeight}
-        className="bg-white object-cover"
+        width={400}
+        height={800}
+        className="h-80 bg-white object-cover"
         unoptimized // Use this temporary flag so Next.js ignores external domain validation limits during testing
       />
 
       {/* Bottom Section: Content */}
-      <div className="flex items-center justify-center bg-secondary p-4">
-        <h5 className="text-m font-bold tracking-tight text-primary">
+      <div className="flex flex-grow flex-col items-center justify-center bg-secondary p-4">
+        <h5 className="text-center font-bold tracking-tight text-primary">
           {data.title}
         </h5>
       </div>
