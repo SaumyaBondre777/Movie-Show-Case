@@ -1,18 +1,71 @@
-import { Button } from "@/components/ui/button"
+// page.tsx
+"use client"
 
-export default function Page() {
+import SearchBar from "components/ui/SearchBar"
+import Card from "components/ui/Card"
+import { useEffect, useState } from "react"
+
+export default function Home() {
+  const [movies, setMovies] = useState([])
+
+  useEffect(() => {
+    const getData = async () => {
+      try {
+        const API_URL = "https://api.imdbapi.dev/titles"
+
+        const filters = {
+          types: ["MOVIE", "TV_SERIES"],
+          genres: ["Action", "Sci-Fi"],
+          countryCodes: ["US"],
+          startYear: 2020,
+          endYear: 2026,
+          minAggregateRating: 7.5,
+          sortBy: "SORT_BY_USER_RATING",
+          sortOrder: "DESC",
+        }
+
+        const queryPairs = Object.entries(filters).flatMap(([key, val]) =>
+          Array.isArray(val) ? val.map((v) => [key, v]) : [[key, val]]
+        )
+
+        const queryString = new URLSearchParams(queryPairs).toString()
+
+        const res = await fetch(`${API_URL}?${queryString}`, {
+          headers: { Accept: "application/json" },
+        })
+
+        if (!res.ok) throw new Error("Failed to fetch movie data")
+        const json = await res.json()
+
+        const mappedData = (json.titles || []).map((item: any) => ({
+          id: item.id,
+          title: item.primaryTitle || item.originalTitle,
+          imageUrl: item.primaryImage?.url || "/fallback-placeholder.png",
+          imageWidth: item.primaryImage?.width || 300,
+          imageHeight: item.primaryImage?.height || 450,
+        }))
+
+        setMovies(mappedData)
+      } catch (error) {
+        console.error("Fetch Error:", error)
+      }
+    }
+    getData()
+  }, [])
+
   return (
-    <div className="flex min-h-svh p-6">
-      <div className="flex max-w-md min-w-0 flex-col gap-4 text-sm leading-loose">
-        <div>
-          <h1 className="font-medium">Project ready!</h1>
-          <p>You may now add components and start building.</p>
-          <p>We&apos;ve already added the button component for you.</p>
-          <Button className="mt-2">Button</Button>
-        </div>
-        <div className="font-mono text-xs text-muted-foreground">
-          (Press <kbd>d</kbd> to toggle dark mode)
-        </div>
+    <div className="mt-8 flex flex-col items-center">
+      <SearchBar />
+
+      {/* Grid container to map out all movies from state */}
+      <div className="mt-8 grid w-full grid-cols-1 gap-6 px-8 sm:grid-cols-2 md:grid-cols-4">
+        {movies.length === 0 ? (
+          <p className="col-span-full text-center text-gray-500">
+            Searching for titles...
+          </p>
+        ) : (
+          movies.map((movie: any) => <Card key={movie.id} data={movie} />)
+        )}
       </div>
     </div>
   )
